@@ -216,96 +216,192 @@ class Bank:
 
 ########################################### MAIN #######################################################
 
-MCB = Bank("MCB")
-print ("**************************** WELCOME TO THE BANK MANAGING SYSTEM ************************")
+# MCB = Bank("MCB")
+# print ("**************************** WELCOME TO THE BANK MANAGING SYSTEM ************************")
+#
+# while True:
+#     choice = int(input(
+#         "1. Make an account\n"
+#         "2. Check the balance\n"
+#         "3. Deposit\n"
+#         "4. Withdraw\n"
+#         "5. Transfer money to another account\n"
+#         "6. Transaction history\n"
+#         "7. Show all Customers:\n"
+#         "8. Quit \nCHOICE --> "))
+#     clear_screen()
+#     if choice == 1:
+#         print("-------- ACCOUNT CREATION --------")
+#         name = str(input("Enter your name: "))
+#         address = str(input("Enter your address: "))
+#         phone = str(input("Enter your phone # "))
+#         g_num = int(input("Enter your gender\n 1.M\n 2.F \n Press 1/2: "))
+#         gender = ''
+#
+#         if g_num == 1:
+#             gender = 'M'
+#         else:
+#             gender = 'F'
+#         new_customer = MCB.add_customer(name,address,phone,gender)
+#         while True:
+#             try:
+#                  balance = int(input("Enter balance of minimum Rs 5000: "))
+#                  if balance < 5000:
+#                      raise  ValueError("Enter balance of minimum 5000!: ")
+#                  break
+#             except ValueError as e:
+#                  print(e)
+#                  print("Please try again....\n")
+#         new_acc = MCB.create_account(new_customer.customer_id,balance)
+#         new_customer.add_account(new_acc)
+#         clear_screen()
+#         print("ACCOUNT CREATED SUCCESSFULLY: ")
+#         MCB.display_individual(new_customer.customer_id)
+#
+#
+#
+#     elif choice == 2:
+#         account_number = str(input("Enter the account number: "))
+#         try:
+#             balance = MCB.bank_balance(account_number)
+#
+#         except ValueError as e:
+#             print("INCORRECT ACCOUNT NUMBER",e)
+#
+#     elif choice == 3:
+#         account_number = str(input("Enter the account number you want to deposit in: "))
+#         try:
+#             amount = int(input("Enter the amount you want to deposit: "))
+#             MCB.bank_deposit(amount,account_number)
+#             print(f"Rs.{amount} has been deposited to account # {account_number} successfully")
+#         except ValueError as e:
+#             print("INCORRECT ACCOUNT NUMBER",e)
+#
+#     elif choice == 4:
+#         account_number = str(input("Enter the account number you want to withdraw from: "))
+#         try:
+#             amount = int(input("Enter the amount you want to withdraw: "))
+#             MCB.bank_withdraw(amount,account_number)
+#             print(f"Rs.{amount} has been withdrawn from account # {account_number} successfully")
+#         except ValueError as e:
+#             print("INCORRECT ACCOUNT NUMBER", e)
+#
+#     elif choice == 5:
+#         sender = str(input("Enter the sender account number: "))
+#         reciver = str(input("Enter the reciver account number: "))
+#         amount = int(input("Enter the amount to be transfer: "))
+#         try:
+#             MCB.transfer(sender,reciver,amount)
+#             print(f"Rs.{amount} has been transfer from acc # {sender} to acc # {reciver} successfully!")
+#         except ValueError as e:
+#             print("INCORRECT ACCOUNT NUMBER", e)
+#
+#     elif choice == 6:
+#         print("For check transaction history ENTER THE PIN *******")
+#         account_number = str(input("Enter the account number: "))
+#         pin_protected_action(123,MCB.display_transactions,account_number)
+#
+#     elif choice == 7:
+#         print("For check all Customers ENTER THE PIN ****** ")
+#         pin_protected_action(123, MCB.display_customers)
+#
+#     elif choice == 8:
+#         print("Good bye!\n Exiting....")
+#         break
 
-while True:
-    choice = int(input(
-        "1. Make an account\n"
-        "2. Check the balance\n"
-        "3. Deposit\n"
-        "4. Withdraw\n"
-        "5. Transfer money to another account\n"
-        "6. Transaction history\n"
-        "7. Show all Customers:\n"
-        "8. Quit \nCHOICE --> "))
-    clear_screen()
-    if choice == 1:
-        print("-------- ACCOUNT CREATION --------")
-        name = str(input("Enter your name: "))
-        address = str(input("Enter your address: "))
-        phone = str(input("Enter your phone # "))
-        g_num = int(input("Enter your gender\n 1.M\n 2.F \n Press 1/2: "))
-        gender = ''
-
-        if g_num == 1:
-            gender = 'M'
-        else:
-            gender = 'F'
-        new_customer = MCB.add_customer(name,address,phone,gender)
-        while True:
-            try:
-                 balance = int(input("Enter balance of minimum Rs 5000: "))
-                 if balance < 5000:
-                     raise  ValueError("Enter balance of minimum 5000!: ")
-                 break
-            except ValueError as e:
-                 print(e)
-                 print("Please try again....\n")
-        new_acc = MCB.create_account(new_customer.customer_id,balance)
-        new_customer.add_account(new_acc)
+def customer_menu():
+    while True:
+        print("----------- CUSTOMER HORIZON ------------\n"
+              "1. Check balance\n"
+              "2. Deposit\n"
+              "3. Withdraw\n"
+              "4. Transfer to another account\n"
+              "5. Transaction history\n"
+              "6. Create new account\n"
+              "7. Find account by CNIC\n"
+              "8. Logout\n")
+        try:
+            choice = int(input("CHOICE -> "))
+        except ValueError:
+            print("PLEASE ENTER VALID OPTION !!!")
+            continue
         clear_screen()
-        print("ACCOUNT CREATED SUCCESSFULLY: ")
-        MCB.display_individual(new_customer.customer_id)
+        if choice == 1:
+            print("Check balance logic...")
+        elif choice == 2:
+            print("Deposit logic...")
+        elif choice == 3:
+            print("Withdraw logic...")
+        elif choice == 4:
+            print("transfer money logic...")
+        elif choice == 5:
+            print("transaction history logic...")
+        elif choice == 6:
+            print("create account logic...")
+        elif choice == 7:
+            print("find account logic...")
+        elif choice == 8:
+            print("RETURNING TO MAIN MENU")
+            return  #  Back to MAIN MENU
+        else:
+            print("INVALID CHOICE!")
 
-
-
-    elif choice == 2:
-        account_number = str(input("Enter the account number: "))
+def admin_menu():
+    while True:
+        print("----------- ADMIN HORIZON ------------\n"
+              "1. Create new customer\n"
+              "2. Create new account of existing customer\n"
+              "3. View all customers\n"
+              "4. View all accounts\n"
+              "5. Delete an account\n"
+              "6. Find customer by CNIC\n"
+              "7. Logout\n")
         try:
-            balance = MCB.bank_balance(account_number)
+            choice = int(input("CHOICE -> "))
+        except ValueError:
+            print("PLEASE ENTER VALID OPTION!")
+            continue
+        clear_screen()
+        if choice == 1:
+            print("Create new customer logic...")
+        elif choice == 2:
+            print("Create new account logic...")
+        elif choice == 3:
+            print("View all customer logic...")
+        elif choice == 4:
+            print("View all accounts logic...")
+        elif choice == 5:
+            print("delete an account logic...")
+        elif choice == 6:
+            print("find customer by CNIC logic...")
+        elif choice == 7:
+            print("RETURNING TO MAIN MENU")
+            return  # Back to MAIN MENU
+        else:
+            print("INVALID CHOICE!")
 
-        except ValueError as e:
-            print("INCORRECT ACCOUNT NUMBER",e)
 
-    elif choice == 3:
-        account_number = str(input("Enter the account number you want to deposit in: "))
-        try:
-            amount = int(input("Enter the amount you want to deposit: "))
-            MCB.bank_deposit(amount,account_number)
-            print(f"Rs.{amount} has been deposited to account # {account_number} successfully")
-        except ValueError as e:
-            print("INCORRECT ACCOUNT NUMBER",e)
 
-    elif choice == 4:
-        account_number = str(input("Enter the account number you want to withdraw from: "))
-        try:
-            amount = int(input("Enter the amount you want to withdraw: "))
-            MCB.bank_withdraw(amount,account_number)
-            print(f"Rs.{amount} has been withdrawn from account # {account_number} successfully")
-        except ValueError as e:
-            print("INCORRECT ACCOUNT NUMBER", e)
 
-    elif choice == 5:
-        sender = str(input("Enter the sender account number: "))
-        reciver = str(input("Enter the reciver account number: "))
-        amount = int(input("Enter the amount to be transfer: "))
-        try:
-            MCB.transfer(sender,reciver,amount)
-            print(f"Rs.{amount} has been transfer from acc # {sender} to acc # {reciver} successfully!")
-        except ValueError as e:
-            print("INCORRECT ACCOUNT NUMBER", e)
-
-    elif choice == 6:
-        print("For check transaction history ENTER THE PIN *******")
-        account_number = str(input("Enter the account number: "))
-        pin_protected_action(123,MCB.display_transactions,account_number)
-
-    elif choice == 7:
-        print("For check all Customers ENTER THE PIN ****** ")
-        pin_protected_action(123, MCB.display_customers)
-
-    elif choice == 8:
-        print("Good bye!\n Exiting....")
+print("=============================== WELCOME TO BANKING SOFTWARE =================================")
+while True:
+    print("---------- MAIN MENU ----------")
+    print("1. Login as Customer\n"
+          "2. Login as Admin\n"
+          "3. Exit")
+    choice = str(input("CHOICE -> "))
+    clear_screen()
+    if choice == '1':
+        # CUSTOMER HORIZON
+        customer_menu()
+    elif choice == '2':
+        # ADMIN HORIZON
+        admin_menu()
+    elif choice == '3':
+        print("------------ GOOD BYE -----------\n"
+              "EXITING........")
         break
+    else:
+        print("PLEASE ENTER VALID OPTION")
+
 
