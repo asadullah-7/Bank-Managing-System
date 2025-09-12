@@ -1,5 +1,7 @@
 import datetime
 import os
+from dis import RETURN_CONST
+
 
 # ================= FUNCTIONS =================
 
@@ -14,8 +16,9 @@ def pin_protected_action(pin, action, *args, **kwargs):
     attempts = 0
     while attempts < 3:
         try:
-            user = int(input("Enter your PIN: "))
+            user = str(input("Enter your PIN: "))
             if user == pin:
+                clear_screen()
                 print("Access Granted!")
                 action(*args, **kwargs)   # call function with arguments
                 return
@@ -90,11 +93,12 @@ class Account:
 ########################################### CUSTOMER CLASS #######################################################
 class Customer:
     customer_counter = 1
-    def __init__(self,customer_name, address , phone , gender):
+    def __init__(self,customer_name, cnic, address , phone , gender):
         self.customer_id = f"C{Customer.customer_counter:03d}"
         Customer.customer_counter += 1
 
         self.customer_name = customer_name
+        self.cnic = cnic
         self.address = address
         self.phone = phone
         self.gender = gender
@@ -121,10 +125,33 @@ class Bank:
         self.customers = {}
     # ================================= CUSTOMER METHODS ==============================
 
-    def add_customer(self, customer_name, address, phone, gender):
-        new_customer = Customer(customer_name, address, phone, gender)
+    def add_customer(self, customer_name,cnic, address, phone, gender):
+        # handeling duplication in cnic:
+        for cust in self.customers.values():
+            if cust.cnic == cnic:
+                raise ValueError("CNIC already exist! Cannot create duplicate customer.")
+        new_customer = Customer(customer_name,cnic, address, phone, gender)
         self.customers[new_customer.customer_id] = new_customer
         return new_customer
+
+    def find_customer_by_cnic(self, cnic):
+        for cust in self.customers.values():
+            if cust.cnic == cnic:
+                title = "Mr." if cust.gender == "M" else "Miss."
+                clear_screen()
+                print(f"Customer, {title}{cust.customer_name} found successfully....")
+
+                if cust.accounts:
+                    print("Accounts:")
+                    for acc in cust.accounts:
+                        print(f"  -> Account Number: {acc.account_number}")
+                else:
+                    print("THIS CUSTOMER HAS NO ACCOUNTS YET.")
+
+                return cust  # customer mil gaya, return kar do
+
+        print("CNIC NOT FOUND!!!!!")
+        return None
 
     #================================= ACCOUNTS METHODS ==============================
     def create_account(self, customer_id, balance = 0):
@@ -193,6 +220,13 @@ class Bank:
         del self.accounts[account_number]
         print(f"Account # {account_number} has been deleted successfully!")
 
+    def match_account_number(self,account_number):
+        for acc in self.accounts.values():
+           if account_number == acc.account_number:
+             return True
+        return False
+
+
 
     def display_individual(self,customer_id):
         print("=========================================================================================")
@@ -233,6 +267,7 @@ class Bank:
 #     if choice == 1:
 #         print("-------- ACCOUNT CREATION --------")
 #         name = str(input("Enter your name: "))
+#         cnic = str(input("Enter your CNIC # "))
 #         address = str(input("Enter your address: "))
 #         phone = str(input("Enter your phone # "))
 #         g_num = int(input("Enter your gender\n 1.M\n 2.F \n Press 1/2: "))
@@ -242,7 +277,7 @@ class Bank:
 #             gender = 'M'
 #         else:
 #             gender = 'F'
-#         new_customer = MCB.add_customer(name,address,phone,gender)
+#         new_customer = MCB.add_customer(name,cnic,address,phone,gender)
 #         while True:
 #             try:
 #                  balance = int(input("Enter balance of minimum Rs 5000: "))
@@ -309,7 +344,15 @@ class Bank:
 #         print("Good bye!\n Exiting....")
 #         break
 
-def customer_menu():
+MCB = Bank("MCB")
+temp = MCB.add_customer('Asad','3520180757573','H # 43/9 D-BLOCK', '03254743450', 'M')
+temp2 = MCB.add_customer('Ahmad','3520180757574','H # 43/9 D-BLOCK', '03254743451', 'M')
+
+MCB.create_account(temp.customer_id,5000)
+MCB.create_account(temp2.customer_id,5000)
+
+def customer_menu(acc_number):
+
     while True:
         print("----------- CUSTOMER HORIZON ------------\n"
               "1. Check balance\n"
@@ -318,8 +361,7 @@ def customer_menu():
               "4. Transfer to another account\n"
               "5. Transaction history\n"
               "6. Create new account\n"
-              "7. Find account by CNIC\n"
-              "8. Logout\n")
+              "7. Logout\n")
         try:
             choice = int(input("CHOICE -> "))
         except ValueError:
@@ -327,20 +369,37 @@ def customer_menu():
             continue
         clear_screen()
         if choice == 1:
-            print("Check balance logic...")
+            MCB.bank_balance(acc_number)
         elif choice == 2:
-            print("Deposit logic...")
+            amount = int(input("Enter the amount you want to deposit: "))
+            MCB.bank_deposit(amount,acc_number)
+            print(f"Rs.{amount} has been deposited to account # {acc_number} successfully")
         elif choice == 3:
-            print("Withdraw logic...")
+            if MCB.bank_balance(acc_number) == 0:
+                print("ACCOUNT IS EMPTY!! Rs.0.00")
+                continue
+            amount = int(input("Enter the amount you want to withdraw: "))
+            MCB.bank_withdraw(amount,acc_number)
+            print(f"Rs.{amount} has been withdrawn from account # {acc_number} successfully")
         elif choice == 4:
-            print("transfer money logic...")
+            reciver = str(input("Enter the account number you want to transfer in: "))
+            if MCB.match_account_number(reciver):
+                if acc_number == reciver:
+                    print("ERROR: YOU TRYING TO TRANSFER MONEY IN SAME ACCOUNT!!")
+                    break
+                else:
+                    amount = int(input("Enter the amount to be transfer: "))
+                    MCB.transfer(acc_number, reciver, amount)
+                    print(f"Rs.{amount} has been transfer from acc # {acc_number} to acc # {reciver} successfully!")
+
+            else:
+                print("ACCOUNT NUMBER NOT FOUND!!")
+
         elif choice == 5:
-            print("transaction history logic...")
+            MCB.display_transactions(acc_number)
         elif choice == 6:
             print("create account logic...")
         elif choice == 7:
-            print("find account logic...")
-        elif choice == 8:
             print("RETURNING TO MAIN MENU")
             return  #  Back to MAIN MENU
         else:
@@ -393,10 +452,19 @@ while True:
     clear_screen()
     if choice == '1':
         # CUSTOMER HORIZON
-        customer_menu()
+        acc_number = str(input("Enter your account NUMBER or press f if you forget: "))
+        if acc_number.lower() == 'f':
+            cnic = str(input("TO FIND YOUR ACCOUNT NUMBER ENTER YOUR CNIC (without dashes) : "))
+            MCB.find_customer_by_cnic(cnic)
+        else:
+            if MCB.match_account_number(acc_number):
+                customer_menu(acc_number)
+            else:
+                print("NOT FOUND!!")
+
     elif choice == '2':
         # ADMIN HORIZON
-        admin_menu()
+        pin_protected_action("123",admin_menu)
     elif choice == '3':
         print("------------ GOOD BYE -----------\n"
               "EXITING........")
