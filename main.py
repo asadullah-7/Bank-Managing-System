@@ -1,6 +1,5 @@
 import datetime
 import os
-from dis import RETURN_CONST
 
 
 # ================= FUNCTIONS =================
@@ -29,6 +28,15 @@ def pin_protected_action(pin, action, *args, **kwargs):
             attempts += 1
             print("Please try again...\n")
     print("TOO MANY ATTEMPTS!! ACCESS DENIED")
+
+def confirmation (user_choice):
+    if user_choice == 1:
+        return True
+    elif user_choice == 2:
+        return False
+    else:
+        print("invalid choice!")
+        return False
 
 
 ########################################### TRANSACTION HISTORY CLASS #######################################################
@@ -111,10 +119,7 @@ class Customer:
         print(f"Customer ID: {self.customer_id}    | Name: {self.customer_name}")
         print(f"Address: {self.address}")
         print(f"Phone # {self.phone} | GENDER {self.gender}")
-        print(f"Accounts:")
-        for acc in self.accounts:
-            acc.display_account()
-            print("--------------------------------")
+
 
 ############################################## BANK CLASS ####################################################
 class Bank:
@@ -134,17 +139,28 @@ class Bank:
         self.customers[new_customer.customer_id] = new_customer
         return new_customer
 
+    def customer_id_match(self,customer_id):
+        return customer_id in self.customers
+
     def find_customer_by_cnic(self, cnic):
         for cust in self.customers.values():
             if cust.cnic == cnic:
                 title = "Mr." if cust.gender == "M" else "Miss."
                 clear_screen()
-                print(f"Customer, {title}{cust.customer_name} found successfully....")
+                print(f"Customer, {title}{cust.customer_name} found successfully....\n"
+                      f"------------ CUSTOMER DETAILS ----------\n"
+                      f"Customer ID: {cust.customer_id}\n"
+                      f"Name: {cust.customer_name} | Gender: {cust.gender}\n"
+                      f"Address: {cust.address}\n"
+                      f"Contact # {cust.phone}\n")
+
 
                 if cust.accounts:
-                    print("Accounts:")
+                    print(f"--------------- ACCOUNTS DETAILS ----------------\n")
                     for acc in cust.accounts:
-                        print(f"  -> Account Number: {acc.account_number}")
+                        print(f"  -> Account Number: {acc.account_number}\n"
+                              f"Balance: {acc.get_balance()}\n"
+                              f"-----------------------------------------------------------")
                 else:
                     print("THIS CUSTOMER HAS NO ACCOUNTS YET.")
 
@@ -152,6 +168,30 @@ class Bank:
 
         print("CNIC NOT FOUND!!!!!")
         return None
+
+    def check_if_cnic_exist(self,cnic):
+        for cust in self.customers.values():
+            if cust.cnic == cnic:
+                return True
+        return False
+
+    def customer_id_by_cnic(self,cnic):
+        for cust in self.customers.values():
+            if cust.cnic == cnic:
+                return cust.customer_id
+        return None
+
+    def delete_customer(self,customer_id):
+        if customer_id not in self.customers:
+            raise ValueError("INVALID CUSTOMER ID!!")
+        customer_to_delete = self.customers[customer_id]
+
+        for acc in list(customer_to_delete.accounts):
+            if acc.account_number in self.accounts:
+                del self.accounts[acc.account_number]
+
+        del self.customers[customer_id]
+
 
     #================================= ACCOUNTS METHODS ==============================
     def create_account(self, customer_id, balance = 0):
@@ -228,6 +268,9 @@ class Bank:
 
 
 
+
+
+
     def display_individual(self,customer_id):
         print("=========================================================================================")
 
@@ -250,100 +293,6 @@ class Bank:
 
 ########################################### MAIN #######################################################
 
-# MCB = Bank("MCB")
-# print ("**************************** WELCOME TO THE BANK MANAGING SYSTEM ************************")
-#
-# while True:
-#     choice = int(input(
-#         "1. Make an account\n"
-#         "2. Check the balance\n"
-#         "3. Deposit\n"
-#         "4. Withdraw\n"
-#         "5. Transfer money to another account\n"
-#         "6. Transaction history\n"
-#         "7. Show all Customers:\n"
-#         "8. Quit \nCHOICE --> "))
-#     clear_screen()
-#     if choice == 1:
-#         print("-------- ACCOUNT CREATION --------")
-#         name = str(input("Enter your name: "))
-#         cnic = str(input("Enter your CNIC # "))
-#         address = str(input("Enter your address: "))
-#         phone = str(input("Enter your phone # "))
-#         g_num = int(input("Enter your gender\n 1.M\n 2.F \n Press 1/2: "))
-#         gender = ''
-#
-#         if g_num == 1:
-#             gender = 'M'
-#         else:
-#             gender = 'F'
-#         new_customer = MCB.add_customer(name,cnic,address,phone,gender)
-#         while True:
-#             try:
-#                  balance = int(input("Enter balance of minimum Rs 5000: "))
-#                  if balance < 5000:
-#                      raise  ValueError("Enter balance of minimum 5000!: ")
-#                  break
-#             except ValueError as e:
-#                  print(e)
-#                  print("Please try again....\n")
-#         new_acc = MCB.create_account(new_customer.customer_id,balance)
-#         new_customer.add_account(new_acc)
-#         clear_screen()
-#         print("ACCOUNT CREATED SUCCESSFULLY: ")
-#         MCB.display_individual(new_customer.customer_id)
-#
-#
-#
-#     elif choice == 2:
-#         account_number = str(input("Enter the account number: "))
-#         try:
-#             balance = MCB.bank_balance(account_number)
-#
-#         except ValueError as e:
-#             print("INCORRECT ACCOUNT NUMBER",e)
-#
-#     elif choice == 3:
-#         account_number = str(input("Enter the account number you want to deposit in: "))
-#         try:
-#             amount = int(input("Enter the amount you want to deposit: "))
-#             MCB.bank_deposit(amount,account_number)
-#             print(f"Rs.{amount} has been deposited to account # {account_number} successfully")
-#         except ValueError as e:
-#             print("INCORRECT ACCOUNT NUMBER",e)
-#
-#     elif choice == 4:
-#         account_number = str(input("Enter the account number you want to withdraw from: "))
-#         try:
-#             amount = int(input("Enter the amount you want to withdraw: "))
-#             MCB.bank_withdraw(amount,account_number)
-#             print(f"Rs.{amount} has been withdrawn from account # {account_number} successfully")
-#         except ValueError as e:
-#             print("INCORRECT ACCOUNT NUMBER", e)
-#
-#     elif choice == 5:
-#         sender = str(input("Enter the sender account number: "))
-#         reciver = str(input("Enter the reciver account number: "))
-#         amount = int(input("Enter the amount to be transfer: "))
-#         try:
-#             MCB.transfer(sender,reciver,amount)
-#             print(f"Rs.{amount} has been transfer from acc # {sender} to acc # {reciver} successfully!")
-#         except ValueError as e:
-#             print("INCORRECT ACCOUNT NUMBER", e)
-#
-#     elif choice == 6:
-#         print("For check transaction history ENTER THE PIN *******")
-#         account_number = str(input("Enter the account number: "))
-#         pin_protected_action(123,MCB.display_transactions,account_number)
-#
-#     elif choice == 7:
-#         print("For check all Customers ENTER THE PIN ****** ")
-#         pin_protected_action(123, MCB.display_customers)
-#
-#     elif choice == 8:
-#         print("Good bye!\n Exiting....")
-#         break
-
 MCB = Bank("MCB")
 temp = MCB.add_customer('Asad','3520180757573','H # 43/9 D-BLOCK', '03254743450', 'M')
 temp2 = MCB.add_customer('Ahmad','3520180757574','H # 43/9 D-BLOCK', '03254743451', 'M')
@@ -360,8 +309,7 @@ def customer_menu(acc_number):
               "3. Withdraw\n"
               "4. Transfer to another account\n"
               "5. Transaction history\n"
-              "6. Create new account\n"
-              "7. Logout\n")
+              "6. Logout\n")
         try:
             choice = int(input("CHOICE -> "))
         except ValueError:
@@ -369,12 +317,15 @@ def customer_menu(acc_number):
             continue
         clear_screen()
         if choice == 1:
+            # FOR CHECK BALANCE
             MCB.bank_balance(acc_number)
         elif choice == 2:
+            # FOR DEPOSIT
             amount = int(input("Enter the amount you want to deposit: "))
             MCB.bank_deposit(amount,acc_number)
             print(f"Rs.{amount} has been deposited to account # {acc_number} successfully")
         elif choice == 3:
+            # FOR WITHDRAW
             if MCB.bank_balance(acc_number) == 0:
                 print("ACCOUNT IS EMPTY!! Rs.0.00")
                 continue
@@ -382,6 +333,7 @@ def customer_menu(acc_number):
             MCB.bank_withdraw(amount,acc_number)
             print(f"Rs.{amount} has been withdrawn from account # {acc_number} successfully")
         elif choice == 4:
+            # FOR TRANSFER
             reciver = str(input("Enter the account number you want to transfer in: "))
             if MCB.match_account_number(reciver):
                 if acc_number == reciver:
@@ -396,10 +348,11 @@ def customer_menu(acc_number):
                 print("ACCOUNT NUMBER NOT FOUND!!")
 
         elif choice == 5:
+            # FOR TRANSACTION HISTORY
             MCB.display_transactions(acc_number)
+
         elif choice == 6:
-            print("create account logic...")
-        elif choice == 7:
+            # FOR RETURNING TO MAIN MENU
             print("RETURNING TO MAIN MENU")
             return  #  Back to MAIN MENU
         else:
@@ -413,8 +366,9 @@ def admin_menu():
               "3. View all customers\n"
               "4. View all accounts\n"
               "5. Delete an account\n"
-              "6. Find customer by CNIC\n"
-              "7. Logout\n")
+              "6. Delete a customer\n"
+              "7. Find customer by CNIC\n"
+              "8. Logout\n")
         try:
             choice = int(input("CHOICE -> "))
         except ValueError:
@@ -422,18 +376,94 @@ def admin_menu():
             continue
         clear_screen()
         if choice == 1:
-            print("Create new customer logic...")
+            # CREATE NEW CUSTOMER
+            print("-------- CUSTOMER CREATION --------")
+            name = str(input("Enter your name: "))
+            cnic = str(input("Enter your CNIC # "))
+            if MCB.check_if_cnic_exist(cnic):
+                print("CNIC Exist !!")
+                continue
+
+            else:
+                address = str(input("Enter your address: "))
+                phone = str(input("Enter your phone # "))
+                g_num = int(input("Enter your gender\n 1.M\n 2.F \n Press 1/2: "))
+                gender = ''
+
+                if g_num == 1:
+                    gender = 'M'
+                else:
+                    gender = 'F'
+                new_customer = MCB.add_customer(name, cnic, address, phone, gender)
+                default_account = MCB.create_account(new_customer.customer_id, 0)
+                print(f"CUSTOMER AND DEFAULT ACCOUNT CREATED SUCCESSFULLY\n"
+                      f"YOUR CUSTOMER ID IS: {new_customer.customer_id}\n"
+                      f"YOUR ACCOUNT NUMBER IS: {default_account.account_number}")
+
         elif choice == 2:
-            print("Create new account logic...")
+            # CREATE NEW ACCOUNT
+            cnic = str(input("Enter your cninc: "))
+            if MCB.check_if_cnic_exist(cnic):
+                confir = int(input("You already have an account did you want to make another? \n1. YES\n2. NO\n CHOICE -> "))
+                if confirmation(confir):
+                    customer_id = MCB.customer_id_by_cnic(cnic)
+                    new_account = MCB.create_account(customer_id, 0)
+                    print(f'YOUR ACCOUNT HAS BEEN CREATED SUCCESSFULLY!!\n'
+                          f'NEW ACCOUNT NUMBER IS: {new_account.account_number}')
+                else:
+                    continue
+            else:
+                clear_screen()
+                print("ERROR!! CUSTOMER IS NOT REGISTERED!! \n")
+                continue
+
         elif choice == 3:
-            print("View all customer logic...")
+            # VIEW ALL CUSTOMER
+            MCB.display_customers()
         elif choice == 4:
-            print("View all accounts logic...")
+            # VIEW ALL ACCOUNTS
+            MCB.display_all()
+
         elif choice == 5:
-            print("delete an account logic...")
+            # DELETE AN ACCOUNT
+            account_number = str(input("Enter the account number you want to delete: "))
+            confir = int(input("DID YOU WANT TO DELETE YOUR ACCOUNT PERMANENTLY?\n1.YES\n2. NO \nCHOICE -> "))
+            if confirmation(confir):
+                MCB.delete_account(account_number)
+                print("ACCOUNT DELETED SUCCESSFULLY!")
+            else:
+                continue
+
+
         elif choice == 6:
-            print("find customer by CNIC logic...")
+            # DELETE A CUSTOMER
+            choice = str(input("Enter customer ID to delete customer, PRESS f IN CASE OF FORGET\nCUSTOMER ID -> "))
+            if choice.lower() == 'f':
+                cnic = str(input("Enter your CNIC: "))
+                customer_id = MCB.customer_id_by_cnic(cnic)
+                if not customer_id:
+                    print("NO CUSTOMER FOUND WITH THIS CNIC!")
+                    continue
+            else:
+                customer_id = choice
+
+            if MCB.customer_id_match(customer_id):
+                confir = int(input("DO YOU WANT TO DELETE CUSTOMER PERMANENTLY? \n1. YES\n2. NO\nCHOICE -> "))
+                if confirmation(confir):
+                    MCB.delete_customer(customer_id)
+                    print("CUSTOMER DELETED SUCCESSFULLY!!")
+                else:
+                    continue
+            else:
+                print("INVALID CUSTOMER ID!!")
+                continue
+
         elif choice == 7:
+            # FIND CUSTOMER BY CNIC
+            cnic = str(input("TO FIND YOUR ACCOUNT NUMBER ENTER YOUR CNIC (without dashes) : "))
+            MCB.find_customer_by_cnic(cnic)
+        elif choice == 8:
+            # RETURNING TO THE MAIN MENU
             print("RETURNING TO MAIN MENU")
             return  # Back to MAIN MENU
         else:
