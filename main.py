@@ -1,5 +1,6 @@
 import datetime
 import os
+import json
 
 
 # ================= FUNCTIONS =================
@@ -89,6 +90,9 @@ class Account:
         print('Balance: ', self.balance)
 
     def show_transaction(self):
+        if not self.transactions:
+            print("No Transactions found for this account yet.")
+            return
         print(f"--------- TRANSACTION FOR {self.account_number} ---------")
         for t in self.transactions:
             t.display_transaction()
@@ -124,10 +128,13 @@ class Customer:
 ############################################## BANK CLASS ####################################################
 class Bank:
     account_counter = 1000
+    DATA_FILE = "bank_data.json"
+
     def __init__(self, name):
         self.name = name
         self.accounts = {}
         self.customers = {}
+        self.load_data()
     # ================================= CUSTOMER METHODS ==============================
 
     def add_customer(self, customer_name,cnic, address, phone, gender):
@@ -141,6 +148,11 @@ class Bank:
 
     def customer_id_match(self,customer_id):
         return customer_id in self.customers
+
+    def get_name(self,customer_id):
+        for cust in self.customers.values():
+            if cust.customer_id == customer_id:
+                return cust.customer_name
 
     def find_customer_by_cnic(self, cnic):
         for cust in self.customers.values():
@@ -298,14 +310,118 @@ class Bank:
             print("============================================================================")
 
 
+    ################################### FILE HANDLING METHODS ############################################
+
+    def load_data(self):
+        try:
+            with open(self.DATA_FILE, "r") as f:
+                data = json.load(f)
+
+                # Reset first
+                self.customers = {}
+                self.accounts = {}
+
+                # Restore Customers
+                for cust_id, cust_data in data.get("customers", {}).items():
+                    customer = Customer(
+                        cust_data["customer_name"],
+                        cust_data["cnic"],
+                        cust_data["address"],
+                        cust_data["phone"],
+                        cust_data["gender"]
+                    )
+                    customer.customer_id = cust_id
+                    self.customers[cust_id] = customer
+
+                # Restore Accounts
+                for acc_num, acc_data in data.get("accounts", {}).items():
+                    account = Account(
+                        acc_num,
+                        acc_data["account_holder"],
+                        acc_data["balance"]
+                    )
+
+                    # Restore transactions
+                    for t in acc_data.get("transactions", []):
+                        tr = Transaction_History(
+                            account_number=acc_num,
+                            trans_type=t["trans_type"],
+                            amount=t["amount"]
+                        )
+                        tr.transaction_id = t["transaction_id"]
+                        tr.timestamp = datetime.datetime.fromisoformat(t["timestamp"])
+                        account.transactions.append(tr)
+
+                        # transaction counter update
+                        Transaction_History.transaction_counter = max(
+                            Transaction_History.transaction_counter, tr.transaction_id + 1
+                        )
+
+                    self.accounts[acc_num] = account
+
+                    # Link with customer
+                    cust_id = acc_data["customer_id"]
+                    if cust_id in self.customers:
+                        self.customers[cust_id].add_account(account)
+
+                # Update account counter
+                Bank.account_counter = data.get("account_counter", Bank.account_counter)
+
+                # Update customer counter
+                if self.customers:
+                    last_cust_num = max(int(cid[1:]) for cid in self.customers.keys())
+                    Customer.customer_counter = last_cust_num + 1
+
+        except (FileNotFoundError, json.JSONDecodeError):
+            # First time run
+            self.customers = {}
+            self.accounts = {}
+
+    def save_data(self):
+        data = {
+            "customers": {
+                cust_id: {
+                    "customer_name": cust.customer_name,
+                    "cnic": cust.cnic,
+                    "address": cust.address,
+                    "phone": cust.phone,
+                    "gender": cust.gender,
+                    "accounts": [acc.account_number for acc in cust.accounts]
+                }
+                for cust_id, cust in self.customers.items()
+            },
+            "accounts": {
+                acc_num: {
+                    "account_holder": acc.account_holder,
+                    "balance": acc.get_balance(),
+                    "customer_id": cust_id,
+                    "transactions": [
+                        {
+                            "transaction_id": t.transaction_id,
+                            "account_number": t.account_number,
+                            "trans_type": t.trans_type,
+                            "amount": t.amount,
+                            "timestamp": t.timestamp.isoformat()
+                        }
+                        for t in acc.transactions
+                    ]
+                }
+                for cust_id, cust in self.customers.items()
+                for acc in cust.accounts
+                for acc_num, a in self.accounts.items() if a == acc
+            },
+            "account_counter": Bank.account_counter
+        }
+
+        with open(self.DATA_FILE, "w") as f:
+            json.dump(data, f, indent=4)
+
+
 ########################################### MAIN #######################################################
 
 MCB = Bank("MCB")
-temp = MCB.add_customer('Asad','3520180757573','H # 43/9 D-BLOCK', '03254743450', 'M')
-temp2 = MCB.add_customer('Ahmad','3520180757574','H # 43/9 D-BLOCK', '03254743451', 'M')
+MCB.load_data()
 
-MCB.create_account(temp.customer_id,5000)
-MCB.create_account(temp2.customer_id,5000)
 
 def customer_menu(acc_number):
 
@@ -319,6 +435,7 @@ def customer_menu(acc_number):
               "6. Logout\n")
         try:
             choice = int(input("CHOICE -> "))
+
         except ValueError:
             print("\nPLEASE ENTER VALID OPTION !!!\n")
             continue
@@ -359,7 +476,7 @@ def customer_menu(acc_number):
             if MCB.match_account_number(reciver):
                 if acc_number == reciver:
                     print("\nERROR: YOU TRYING TO TRANSFER MONEY IN SAME ACCOUNT!!\n")
-                    break
+                    continue
                 else:
                     amount = int(input("\nEnter the amount to be transfer: \n"))
                     if amount <= 0:
@@ -429,7 +546,7 @@ def admin_menu():
                 default_account = MCB.create_account(new_customer.customer_id, 0)
                 print(f"\nCUSTOMER AND DEFAULT ACCOUNT CREATED SUCCESSFULLY\n"
                       f"YOUR CUSTOMER ID IS: {new_customer.customer_id}\n"
-                      f"YOUR ACCOUNT NUMBER IS: {default_account.account_number}")
+                      f"YOUR ACCOUNT NUMBER IS: {default_account.account_number}\n")
 
         elif choice == 2:
             # CREATE NEW ACCOUNT
@@ -440,7 +557,7 @@ def admin_menu():
                     customer_id = MCB.customer_id_by_cnic(cnic)
                     new_account = MCB.create_account(customer_id, 0)
                     print(f'\nYOUR ACCOUNT HAS BEEN CREATED SUCCESSFULLY!!\n'
-                          f'NEW ACCOUNT NUMBER IS: {new_account.account_number}')
+                          f'NEW ACCOUNT NUMBER IS: {new_account.account_number}\n')
                 else:
                     continue
             else:
@@ -479,7 +596,8 @@ def admin_menu():
                 customer_id = choice
 
             if MCB.customer_id_match(customer_id):
-                confir = int(input("\nDO YOU WANT TO DELETE CUSTOMER PERMANENTLY? \n1. YES\n2. NO\nCHOICE -> "))
+                name = MCB.get_name(customer_id)
+                confir = int(input(f"\nDO YOU WANT TO DELETE \"{name}\'s Account\" PERMANENTLY? \n1. YES\n2. NO\nCHOICE -> "))
                 if confirmation(confir):
                     MCB.delete_customer(customer_id)
                     print("\nCUSTOMER DELETED SUCCESSFULLY!!")
@@ -511,7 +629,9 @@ while True:
           "3. Exit"
           "ENTER IN NUMBERS e.g 1,2,3")
     choice = str(input("\n   CHOICE -> "))
+    input("\nPress Enter to continue...")
     clear_screen()
+
     if choice == '1':
         # CUSTOMER HORIZON
         acc_number = str(input("\nEnter your account NUMBER or press f if you forget: "))
@@ -530,6 +650,8 @@ while True:
     elif choice == '3':
         print("\n\n------------ GOOD BYE -----------\n"
               "EXITING........")
+        MCB.save_data()
+        print("Data has been save in file!\n\n")
         break
     else:
         print("\n\n  !!PLEASE ENTER VALID OPTION!! \n\n")
