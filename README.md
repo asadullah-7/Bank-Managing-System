@@ -2,6 +2,7 @@
 -- 📌 Overview
 
 This is a Banking System project built using Python (OOP concepts) Timeline(5-days).
+
 It simulates core banking functionalities such as:
 1. Customer Management
 2. Account Creation & Management
