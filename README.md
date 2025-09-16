@@ -30,13 +30,13 @@ It simulates core banking functionalities such as:
 
 📂 Project Structure
 BankingSystem/
-│
-├── main.py              # Entry point of the project
-├── bank.py              # Bank class with all methods
-├── customer.py          # Customer class
-├── account.py           # Account class
-├── bank_data.json       # JSON database (auto created)
-└── README.md            # Project Documentation
+- │
+- ├── main.py              # Entry point of the project
+- ├── bank.py              # Bank class with all methods
+- ├── customer.py          # Customer class
+- ├── account.py           # Account class
+- ├── bank_data.json       # JSON database (auto created)
+- └── README.md            # Project Documentation
 
 ## 🚀 How to Run
 
