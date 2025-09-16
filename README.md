@@ -13,14 +13,14 @@ It simulates core banking functionalities such as:
 
 ## ✨ Features
 
-✔ Add / Delete Customers
-✔ Create / Delete Accounts
-✔ Deposit and Withdraw Money
-✔ Transfer Funds between Accounts
-✔ View Customer Details
-✔ Display Transaction History
-✔ Data Persistence using JSON (Auto Save/Load)
-✔ Colored Console Output for Better UI (using ANSI codes)
+- ✔ Add / Delete Customers
+- ✔ Create / Delete Accounts
+- ✔ Deposit and Withdraw Money
+- ✔ Transfer Funds between Accounts
+- ✔ View Customer Details
+- ✔ Display Transaction History
+- ✔ Data Persistence using JSON (Auto Save/Load)
+- ✔ Colored Console Output for Better UI (using ANSI codes)
 
 🛠️ Technologies Used
 
