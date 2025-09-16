@@ -42,6 +42,7 @@ BankingSystem/
 
 Run the program:
 python main.py
+# default admin password is "123"
 
 
 Follow the on-screen menu to interact with the banking system.
