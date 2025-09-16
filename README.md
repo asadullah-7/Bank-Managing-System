@@ -22,13 +22,13 @@ It simulates core banking functionalities such as:
 - ✔ Data Persistence using JSON (Auto Save/Load)
 - ✔ Colored Console Output for Better UI (using ANSI codes)
 
-🛠️ Technologies Used
+## 🛠️ Technologies Used
 
 1. Python 3.x
 2. JSON (for file handling & persistence)
 3. OOP Concepts (Classes: Bank, Customer, Account)
 
-📂 Project Structure
+## 📂 Project Structure
 BankingSystem/
 - │
 - ├── main.py              # Entry point of the project
