@@ -3,6 +3,7 @@ import os
 import json
 
 
+
 # ================= FUNCTIONS =================
 
 def clear_screen():
@@ -39,6 +40,26 @@ def confirmation (user_choice):
         print("\n\n INVALID CHOICE !!\n")
         return False
 
+# FOR LOGGING OUT AUTOMATICALLY...
+import sys, threading
+
+def timeout_input(prompt, timeout=120):  # timeout in seconds (default 2 min)
+    user_input = [None]
+
+    def get_input():
+        try:
+            user_input[0] = input(prompt)
+        except EOFError:
+            user_input[0] = None
+
+    thread = threading.Thread(target=get_input)
+    thread.start()
+    thread.join(timeout)
+
+    if thread.is_alive():  # agar user ne time par input na dia
+        print("\n⚠ TIME OUT! Logging out automatically...\n")
+        return None
+    return user_input[0]
 
 ########################################### TRANSACTION HISTORY CLASS #######################################################
 class Transaction_History:
@@ -85,9 +106,11 @@ class Account:
         return self.balance
 
     def display_account(self):
-        print('Account Number: ', self.account_number)
-        print('Account Holder: ', self.account_holder)
-        print('Balance: ', self.balance)
+        print("-" * 50)
+        print(f"Account Number : {self.account_number}")
+        print(f"Account Holder : {self.account_holder}")
+        print(f"Balance        : Rs. {self.balance}")
+        print("-" * 50)
 
     def show_transaction(self):
         if not self.transactions:
@@ -120,9 +143,13 @@ class Customer:
         self.accounts.append(account)
 
     def display_customer(self):
-        print(f"Customer ID: {self.customer_id}    | Name: {self.customer_name}")
-        print(f"Address: {self.address}")
-        print(f"Phone # {self.phone} | GENDER {self.gender}")
+        print("=" * 50)
+        print(f"Customer ID : {self.customer_id}")
+        print(f"Name        : {self.customer_name}")
+        print(f"Address     : {self.address}")
+        print(f"Phone       : {self.phone}")
+        print(f"Gender      : {'Male' if self.gender == 'M' else 'Female'}")
+        print("=" * 50)
 
 
 ############################################## BANK CLASS ####################################################
@@ -298,12 +325,18 @@ class Bank:
             print("=========================================================================================")
 
     def display_all(self):
+        if not self.accounts:
+            print("THERE ARE NO ACCOUNTS YET\n")
+            return
         print(f"############### {self.name} ################")
         for acc in self.accounts.values():
             acc.display_account()
             print("_____________________________________________")
 
     def display_customers(self):
+        if not self.customers:
+            print("THERE ARE NO CUSTOMERS YET\n")
+            return
         print(f"############### Customers of {self.name} ################")
         for customer in self.customers.values():
             customer.display_customer()
@@ -433,8 +466,11 @@ def customer_menu(acc_number):
               "4. Transfer to another account\n"
               "5. Transaction history\n"
               "6. Logout\n")
+        choice = timeout_input("CHOICE -> ", timeout=15)
+        if choice is None:
+            return
         try:
-            choice = int(input("CHOICE -> "))
+           choice = int(choice)
 
         except ValueError:
             print("\nPLEASE ENTER VALID OPTION !!!\n")
@@ -517,8 +553,11 @@ def admin_menu():
               "6. Delete a customer\n"
               "7. Find customer by CNIC\n"
               "8. Logout\n")
+        choice = timeout_input("CHOICE -> ", timeout=80)
+        if choice is None:
+            return
         try:
-            choice = int(input("CHOICE -> "))
+            choice = int(choice)
         except ValueError:
             print("\nPLEASE ENTER VALID OPTION!\n")
             continue
@@ -621,15 +660,15 @@ def admin_menu():
 
 
 
-print("=============================== WELCOME TO BANKING SOFTWARE =================================")
+print ("=============================== WELCOME TO BANKING SOFTWARE =================================")
 while True:
     print("---------- MAIN MENU ----------")
     print("1. Login as Customer\n"
           "2. Login as Admin\n"
           "3. Exit"
-          "ENTER IN NUMBERS e.g 1,2,3")
+          "\nENTER IN NUMBERS e.g 1,2,3")
     choice = str(input("\n   CHOICE -> "))
-    input("\nPress Enter to continue...")
+
     clear_screen()
 
     if choice == '1':
